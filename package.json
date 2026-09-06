@@ -1,0 +1,53 @@
+{
+  "name": "kanit",
+  "version": "0.1.0",
+  "description": "Continuous compliance engine for SOC 2 & ISO 27001 (AWS & GitHub)",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "kanit": "./dist/bin/kanit.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "start": "node ./dist/bin/kanit.js"
+  },
+  "keywords": [
+    "compliance",
+    "soc2",
+    "iso27001",
+    "security",
+    "aws",
+    "github",
+    "audit",
+    "cli"
+  ],
+  "author": "Kanit",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@aws-sdk/client-cloudtrail": "^3.758.0",
+    "@aws-sdk/client-ec2": "^3.758.0",
+    "@aws-sdk/client-iam": "^3.758.0",
+    "@aws-sdk/client-rds": "^3.758.0",
+    "@aws-sdk/client-s3": "^3.758.0",
+    "@octokit/rest": "^21.1.1",
+    "boxen": "^8.0.1",
+    "chalk": "^5.4.1",
+    "cli-table3": "^0.6.5",
+    "commander": "^13.1.0",
+    "ora": "^8.2.0",
+    "pdf-lib": "^1.17.1",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

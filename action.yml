@@ -1,0 +1,69 @@
+name: 'Kanit Compliance Audit'
+description: 'Continuous SOC 2 & ISO 27001 compliance audit for AWS and GitHub'
+author: 'Kanit Security'
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  format:
+    description: 'Output format (terminal, json, markdown, html, pdf)'
+    required: false
+    default: 'markdown'
+  output:
+    description: 'Path to save report output'
+    required: false
+    default: 'kanit-report.md'
+  fail-under:
+    description: 'Minimum compliance score threshold to pass CI (0-100)'
+    required: false
+    default: '80'
+  fail-on-severity:
+    description: 'Fail if any check fails at or above severity (LOW, MEDIUM, HIGH, CRITICAL)'
+    required: false
+    default: 'CRITICAL'
+  mock:
+    description: 'Run in mock/demo mode without live credentials'
+    required: false
+    default: 'false'
+  github-token:
+    description: 'GitHub token with org and repo read access'
+    required: false
+    default: ${{ github.token }}
+  aws-region:
+    description: 'AWS target region'
+    required: false
+    default: 'us-east-1'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Run Kanit Compliance Audit
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        AWS_REGION: ${{ inputs.aws-region }}
+      run: |
+        ARGS=""
+        if [ "${{ inputs.mock }}" = "true" ]; then
+          ARGS="$ARGS --mock"
+        fi
+        if [ -n "${{ inputs.format }}" ]; then
+          ARGS="$ARGS --format ${{ inputs.format }}"
+        fi
+        if [ -n "${{ inputs.output }}" ]; then
+          ARGS="$ARGS --output ${{ inputs.output }}"
+        fi
+        if [ -n "${{ inputs.fail-under }}" ]; then
+          ARGS="$ARGS --fail-under ${{ inputs.fail-under }}"
+        fi
+        if [ -n "${{ inputs.fail-on-severity }}" ]; then
+          ARGS="$ARGS --fail-on-severity ${{ inputs.fail-on-severity }}"
+        fi
+
+        npx kanit scan $ARGS

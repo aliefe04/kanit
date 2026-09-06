@@ -1,0 +1,18 @@
+{
+  "$schema": "./kanit.schema.json",
+  "frameworks": ["SOC2", "ISO27001"],
+  "providers": {
+    "github": {
+      "org": "my-org",
+      "repo": "my-repo"
+    },
+    "aws": {
+      "region": "us-east-1"
+    }
+  },
+  "thresholds": {
+    "minScore": 80,
+    "failOnSeverity": "CRITICAL"
+  },
+  "mock": false
+}
