@@ -22,6 +22,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies & build CLI
+        run: |
+          npm ci
+          npm run build
+
       - name: Run Kanit Compliance Audit (Mock Mode for CI Demo)
         uses: ./
         with:

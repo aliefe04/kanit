@@ -52,6 +52,20 @@ runs:
       with:
         node-version: 20
 
+    - name: Prepare Kanit CLI
+      shell: bash
+      run: |
+        if [ -f "${{ github.action_path }}/package.json" ]; then
+          if [ ! -d "${{ github.action_path }}/node_modules" ]; then
+            echo "Installing dependencies in ${{ github.action_path }}..."
+            npm --prefix "${{ github.action_path }}" ci --ignore-scripts || npm --prefix "${{ github.action_path }}" install --ignore-scripts
+          fi
+          if [ ! -f "${{ github.action_path }}/dist/bin/kanit.js" ]; then
+            echo "Building Kanit CLI in ${{ github.action_path }}..."
+            npm --prefix "${{ github.action_path }}" run build
+          fi
+        fi
+
     - name: Run Kanit Compliance Audit
       id: audit
       shell: bash
@@ -79,6 +93,8 @@ runs:
         # Execute scan using locally built CLI if available, otherwise npx
         if [ -f "${{ github.action_path }}/dist/bin/kanit.js" ]; then
           node "${{ github.action_path }}/dist/bin/kanit.js" scan $ARGS
+        elif command -v kanit >/dev/null 2>&1; then
+          kanit scan $ARGS
         else
           npx kanit scan $ARGS
         fi
