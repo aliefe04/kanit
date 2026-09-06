@@ -18,11 +18,12 @@
 ## Installation
 
 ```bash
-# Global CLI install
-npm install -g kanit
+# Run instantly with zero install
+npx @aliefe04/kanit scan --mock
 
-# Or run via npx
-npx kanit scan --mock
+# Or install globally
+npm install -g @aliefe04/kanit
+kanit scan --mock
 ```
 
 ---

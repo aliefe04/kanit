@@ -100,7 +100,7 @@ runs:
         elif command -v kanit >/dev/null 2>&1; then
           kanit scan $ARGS
         else
-          npx -y kanit scan $ARGS
+          npx -y @aliefe04/kanit scan $ARGS
         fi
 
         # Append markdown output to GitHub Step Summary if requested
