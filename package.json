@@ -8,6 +8,11 @@
   "bin": {
     "kanit": "./dist/bin/kanit.js"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "action.yml"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "vitest run",

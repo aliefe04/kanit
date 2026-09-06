@@ -41,7 +41,7 @@ export function createCli(): Command {
   program
     .name('kanit')
     .description('Kanit — Open Source Continuous Compliance Engine (SOC 2 & ISO 27001)')
-    .version('1.0.0');
+    .version('0.1.0');
 
   program
     .command('scan')
