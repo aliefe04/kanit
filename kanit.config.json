@@ -1,18 +1,21 @@
 {
   "$schema": "./kanit.schema.json",
-  "frameworks": ["SOC2", "ISO27001"],
-  "providers": {
-    "github": {
-      "org": "my-org",
-      "repo": "my-repo"
-    },
-    "aws": {
-      "region": "us-east-1"
-    }
+  "version": "1.0",
+  "github": {
+    "owner": "aliefe04",
+    "repo": "kanit",
+    "tokenEnv": "GITHUB_TOKEN"
+  },
+  "aws": {
+    "region": "us-east-1",
+    "profile": "default"
   },
   "thresholds": {
     "minScore": 80,
     "failOnSeverity": "CRITICAL"
   },
-  "mock": false
+  "reporting": {
+    "outputDir": "./reports",
+    "formats": ["terminal", "json"]
+  }
 }
