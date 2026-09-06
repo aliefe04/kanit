@@ -38,6 +38,10 @@ inputs:
     description: 'Whether to append the audit report to the GitHub Actions Job Summary'
     required: false
     default: 'true'
+  node-version:
+    description: 'Node.js version to use for the scan environment'
+    required: false
+    default: '22'
 
 outputs:
   report-path:
@@ -50,7 +54,7 @@ runs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: 20
+        node-version: ${{ inputs.node-version }}
 
     - name: Prepare Kanit CLI
       shell: bash
@@ -96,11 +100,11 @@ runs:
         elif command -v kanit >/dev/null 2>&1; then
           kanit scan $ARGS
         else
-          npx kanit scan $ARGS
+          npx -y kanit scan $ARGS
         fi
 
         # Append markdown output to GitHub Step Summary if requested
-        if [ "${{ inputs.step-summary }}" = "true" ] && [ -f "${{ inputs.output }}" ]; then
+        if [ "${{ inputs.step-summary }}" = "true" ] && [ "${{ inputs.format }}" = "markdown" ] && [ -f "${{ inputs.output }}" ]; then
           if [ -n "$GITHUB_STEP_SUMMARY" ]; then
             echo "## 🛡️ Kanit Continuous Compliance Audit" >> $GITHUB_STEP_SUMMARY
             cat "${{ inputs.output }}" >> $GITHUB_STEP_SUMMARY
