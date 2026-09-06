@@ -141,16 +141,17 @@ export class ComplianceEngine {
         : 100,
     };
 
-    // Calculate tamper-evident SHA-256 hash
+    const scanTimestamp = new Date().toISOString();
+
+    // Calculate tamper-evident SHA-256 hash over results and canonical scan timestamp
     const evidenceSha256 = hashEvidence({
       results: results.map((r) => ({
         id: r.id,
         status: r.status,
         evidence: r.evidence,
       })),
-      timestamp: new Date().toISOString(),
+      timestamp: scanTimestamp,
     });
-
     return {
       total,
       passed,
@@ -162,7 +163,7 @@ export class ComplianceEngine {
       frameworkScores,
       evidenceSha256,
       scanDurationMs: Date.now() - startTime,
-      timestamp: new Date().toISOString(),
+      timestamp: scanTimestamp,
       results,
       metadata: {
         version: '0.1.0',

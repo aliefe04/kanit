@@ -34,6 +34,15 @@ inputs:
     description: 'AWS target region'
     required: false
     default: 'us-east-1'
+  step-summary:
+    description: 'Whether to append the audit report to the GitHub Actions Job Summary'
+    required: false
+    default: 'true'
+
+outputs:
+  report-path:
+    description: 'Path where the generated report is stored'
+    value: ${{ inputs.output }}
 
 runs:
   using: 'composite'
@@ -44,6 +53,7 @@ runs:
         node-version: 20
 
     - name: Run Kanit Compliance Audit
+      id: audit
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
@@ -66,4 +76,17 @@ runs:
           ARGS="$ARGS --fail-on-severity ${{ inputs.fail-on-severity }}"
         fi
 
-        npx kanit scan $ARGS
+        # Execute scan using locally built CLI if available, otherwise npx
+        if [ -f "${{ github.action_path }}/dist/bin/kanit.js" ]; then
+          node "${{ github.action_path }}/dist/bin/kanit.js" scan $ARGS
+        else
+          npx kanit scan $ARGS
+        fi
+
+        # Append markdown output to GitHub Step Summary if requested
+        if [ "${{ inputs.step-summary }}" = "true" ] && [ -f "${{ inputs.output }}" ]; then
+          if [ -n "$GITHUB_STEP_SUMMARY" ]; then
+            echo "## 🛡️ Kanit Continuous Compliance Audit" >> $GITHUB_STEP_SUMMARY
+            cat "${{ inputs.output }}" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi

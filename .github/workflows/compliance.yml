@@ -1,0 +1,39 @@
+name: Kanit Compliance Audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * *' # Daily continuous compliance scan
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  compliance:
+    name: Continuous SOC 2 & ISO 27001 Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run Kanit Compliance Audit (Mock Mode for CI Demo)
+        uses: ./
+        with:
+          format: markdown
+          output: compliance-report.md
+          fail-under: 80
+          fail-on-severity: CRITICAL
+          mock: true
+          step-summary: true
+
+      - name: Upload Compliance Evidence Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanit-compliance-report
+          path: compliance-report.md
