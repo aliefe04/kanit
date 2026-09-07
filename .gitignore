@@ -35,3 +35,12 @@ kanit-report.*
 *.njsproj
 *.sln
 *.sw?
+
+# Agent skills & local configs
+.agents/
+.claude/
+skills-lock.json
+
+# Promo assets & renders
+kanit-promo/
+kanit-promo.mp4
