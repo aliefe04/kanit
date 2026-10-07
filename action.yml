@@ -1,0 +1,112 @@
+name: 'Kanit Compliance Audit'
+description: 'Continuous SOC 2 & ISO 27001 compliance audit for AWS and GitHub'
+author: 'Kanit Security'
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  format:
+    description: 'Output format (terminal, json, markdown, html, pdf)'
+    required: false
+    default: 'markdown'
+  output:
+    description: 'Path to save report output'
+    required: false
+    default: 'kanit-report.md'
+  fail-under:
+    description: 'Minimum compliance score threshold to pass CI (0-100)'
+    required: false
+    default: '80'
+  fail-on-severity:
+    description: 'Fail if any check fails at or above severity (LOW, MEDIUM, HIGH, CRITICAL)'
+    required: false
+    default: 'CRITICAL'
+  mock:
+    description: 'Run in mock/demo mode without live credentials'
+    required: false
+    default: 'false'
+  github-token:
+    description: 'GitHub token with org and repo read access'
+    required: false
+    default: ${{ github.token }}
+  aws-region:
+    description: 'AWS target region'
+    required: false
+    default: 'us-east-1'
+  step-summary:
+    description: 'Whether to append the audit report to the GitHub Actions Job Summary'
+    required: false
+    default: 'true'
+  node-version:
+    description: 'Node.js version to use for the scan environment'
+    required: false
+    default: '22'
+
+outputs:
+  report-path:
+    description: 'Path where the generated report is stored'
+    value: ${{ inputs.output }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Prepare Kanit CLI
+      shell: bash
+      run: |
+        if [ -f "${{ github.action_path }}/package.json" ]; then
+          if [ ! -d "${{ github.action_path }}/node_modules" ]; then
+            echo "Installing dependencies in ${{ github.action_path }}..."
+            npm --prefix "${{ github.action_path }}" ci --ignore-scripts || npm --prefix "${{ github.action_path }}" install --ignore-scripts
+          fi
+          if [ ! -f "${{ github.action_path }}/dist/bin/kanit.js" ]; then
+            echo "Building Kanit CLI in ${{ github.action_path }}..."
+            npm --prefix "${{ github.action_path }}" run build
+          fi
+        fi
+
+    - name: Run Kanit Compliance Audit
+      id: audit
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        AWS_REGION: ${{ inputs.aws-region }}
+      run: |
+        ARGS=""
+        if [ "${{ inputs.mock }}" = "true" ]; then
+          ARGS="$ARGS --mock"
+        fi
+        if [ -n "${{ inputs.format }}" ]; then
+          ARGS="$ARGS --format ${{ inputs.format }}"
+        fi
+        if [ -n "${{ inputs.output }}" ]; then
+          ARGS="$ARGS --output ${{ inputs.output }}"
+        fi
+        if [ -n "${{ inputs.fail-under }}" ]; then
+          ARGS="$ARGS --fail-under ${{ inputs.fail-under }}"
+        fi
+        if [ -n "${{ inputs.fail-on-severity }}" ]; then
+          ARGS="$ARGS --fail-on-severity ${{ inputs.fail-on-severity }}"
+        fi
+
+        # Execute scan using locally built CLI if available, otherwise npx
+        if [ -f "${{ github.action_path }}/dist/bin/kanit.js" ]; then
+          node "${{ github.action_path }}/dist/bin/kanit.js" scan $ARGS
+        elif command -v kanit >/dev/null 2>&1; then
+          kanit scan $ARGS
+        else
+          npx -y @aliefe04/kanit scan $ARGS
+        fi
+
+        # Append markdown output to GitHub Step Summary if requested
+        if [ "${{ inputs.step-summary }}" = "true" ] && [ "${{ inputs.format }}" = "markdown" ] && [ -f "${{ inputs.output }}" ]; then
+          if [ -n "$GITHUB_STEP_SUMMARY" ]; then
+            echo "## 🛡️ Kanit Continuous Compliance Audit" >> $GITHUB_STEP_SUMMARY
+            cat "${{ inputs.output }}" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi
